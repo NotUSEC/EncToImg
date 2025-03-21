@@ -1,8 +1,12 @@
-﻿function Convert-ImageToCompressedEncryptedBinary {
+function Convert-ImageToCompressedEncryptedBinary {
     param (
         [string]$ImagePath
     )
     
+    # Чистим переменные от кавычек, а то в ошибку сыпемся
+    $ImagePath = $ImagePath -replace '"', ''
+    
+    # Проверяем что файл вообще существует
     if (!(Test-Path $ImagePath)) {
         Write-Host "Файл не существует: $ImagePath"
         return
@@ -38,11 +42,15 @@ function Convert-EncryptedBinaryToImage {
         [string]$EncodedFilePath,
         [string]$OutputImagePath
     )
+
+    # Чистим переменные от кавычек, а то в ошибку сыпемся
+    $EncodedFilePath = $EncodedFilePath -replace '"', ''
+    $OutputImagePath = $OutputImagePath -replace '"', ''
     
+    # Если URL, то проверяем что он живой. Если Файл, то проверяем что он существует
     if ($EncodedFilePath -match "^https?:\/\/.*") {
         try {
             $EncryptedBytes = Invoke-WebRequest -Uri $EncodedFilePath -UseBasicParsing | Select-Object -ExpandProperty Content
-            $EncryptedBytes = [Convert]::FromBase64String($EncryptedBytes)
         } catch {
             Write-Host "Ошибка загрузки файла по URL: $_"
             return
@@ -81,7 +89,7 @@ Write-Host "Выберите действие:`n1. Зашифровать изо
 $choice = Read-Host "Введите 1 или 2"
 
 if ($choice -eq "1") {
-    $imagePath = Read-Host "Введите путь к картинке ТОЛЬКО JPG. В формате C:\somedir\somefile.jpg"
+    $imagePath = Read-Host "Введите путь к картинке. В формате C:\somedir\somefile.jpg"
     Convert-ImageToCompressedEncryptedBinary -ImagePath $imagePath
 } elseif ($choice -eq "2") {
     $encodedFilePath = Read-Host "Введите путь до закодированного файла или URL с данными в RAW"
